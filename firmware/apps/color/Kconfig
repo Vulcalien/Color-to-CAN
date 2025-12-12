@@ -1,0 +1,5 @@
+config CUSTOM_COLOR_APP
+    tristate "Color sensor app"
+    default y
+    ---help---
+        Color sensor application

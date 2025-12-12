@@ -1,0 +1,10 @@
+echo " "
+echo "ToF-L4 Board @ ARSLAB"
+
+mount -t binfs /bin
+#mount -t procfs /proc
+
+set SENSOR_ID {{SENSOR_ID}}
+
+echo "Starting color sensor app"
+color start

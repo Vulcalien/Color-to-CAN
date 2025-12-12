@@ -1,0 +1,18 @@
+# build files in 'config'
+/config/**/*.o
+/config/**/*.a
+/config/**/.built
+/config/**/.depend
+/config/**/Make.dep
+/config/include/romfs.h
+
+# build files in 'apps'
+/apps/**/*.o
+/apps/**/.built
+/apps/**/.depend
+/apps/**/Make.dep
+/apps/Kconfig
+/apps/.kconfig
+
+# generated rcS file
+/etc/init.d/rcS
