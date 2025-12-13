@@ -8,6 +8,6 @@ MODULE = "color"
 CSRCS   = $(wildcard src/*.c)
 MAINSRC = src/main.c
 
-CFLAGS += -Iinclude -I../../include
+CFLAGS += -Iinclude -I../../../include
 
 include $(APPDIR)/Application.mk
