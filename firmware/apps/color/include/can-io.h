@@ -15,12 +15,8 @@
  */
 #pragma once
 
-#include <stdlib.h>
-#include <stdbool.h>
-#include <stdint.h>
+#include "main.h"
 
-#define BOARD_RED_LED   0
-#define BOARD_GREEN_LED 1
-extern void board_userled(int led, bool ledon);
+extern int can_io_start(void);
 
-extern bool debug_flag;
+extern int can_io_set_sensor_id(int id);
