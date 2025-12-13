@@ -24,8 +24,12 @@
 #include <sys/ioctl.h>
 #include <nuttx/can/can.h>
 
+#include "color2can.h"
+
 static int can_fd;
 static int sensor_id;
+
+static sem_t request_data_message;
 
 /* ================================================================== */
 /*                              Receiver                              */
@@ -34,7 +38,33 @@ static int sensor_id;
 #define RECEIVER_BUFFER_SIZE (sizeof(struct can_msg_s))
 
 static inline void handle_message(const struct can_msg_s *msg) {
-    // TODO
+    int msg_sensor_id = msg->cm_hdr.ch_id % COLOR2CAN_MAX_SENSOR_COUNT;
+    int msg_type      = msg->cm_hdr.ch_id - msg_sensor_id;
+
+    // check if message is addressed to this device (ID=0 is broadcast)
+    if(msg_sensor_id != 0 && msg_sensor_id != sensor_id)
+        return;
+
+    switch(msg_type) {
+        case COLOR2CAN_CONFIG_MASK_ID: {
+            if(msg->cm_hdr.ch_dlc != COLOR2CAN_CONFIG_SIZE) {
+                printf(
+                    "[CAN-IO] malformed config message "
+                    "(size=%d, expected=%d)\n",
+                    msg->cm_hdr.ch_dlc, COLOR2CAN_CONFIG_SIZE
+                );
+                break;
+            }
+
+            // TODO ...
+        } break;
+
+        case COLOR2CAN_SAMPLE_MASK_ID: {
+            // if RTR bit is set, request a data message
+            if(msg->cm_hdr.ch_rtr)
+                sem_post(&request_data_message);
+        } break;
+    }
 }
 
 static void *receiver_run(void *arg) {
@@ -107,6 +137,12 @@ int can_io_start(void) {
     printf("[CAN-IO] /dev/can0 opened\n");
     print_bit_timing(can_fd);
 
+    // initialize request data message semaphore
+    if(sem_init(&request_data_message, 0, 0)) {
+        printf("[CAN-IO] error initializing request data message semaphore\n");
+        return 1;
+    }
+
     // create receiver thread
     pthread_t receiver_thread;
     if(pthread_create(&receiver_thread, NULL, receiver_run, NULL)) {
@@ -125,7 +161,7 @@ int can_io_start(void) {
 
 int can_io_set_sensor_id(int id) {
     int err = 0;
-    if(id > 0 && id < /*TODO*/1)
+    if(id > 0 && id < COLOR2CAN_MAX_SENSOR_COUNT)
         sensor_id = id;
     else
         err = 1;
