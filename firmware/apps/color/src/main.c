@@ -19,6 +19,7 @@
 #include <string.h>
 
 #include "can-io.h"
+#include "color.h"
 
 bool debug_flag = false;
 
@@ -51,7 +52,8 @@ static int cmd_help(char *arg0) {
 int color_main(int argc, char *argv[]) {
     char *arg0 = (argc > 0 ? argv[0] : "<PROGRAM-NAME>");
 
-    // TODO init
+    while(color_init())
+        puts("[Main] Color sensor initialization failed: retrying");
 
     can_io_start();
 
