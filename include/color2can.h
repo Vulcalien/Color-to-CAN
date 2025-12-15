@@ -29,12 +29,12 @@ struct color2can_config {
     uint8_t transmit_timing : 1; // 0=on-demand, 1=continuous
 };
 
-#define COLOR2CAN_SAMPLE_SIZE 4
+#define COLOR2CAN_SAMPLE_SIZE 8
 struct color2can_sample {
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
-    uint8_t clear;
+    uint16_t r;
+    uint16_t g;
+    uint16_t b;
+    uint16_t clear;
 };
 
 // TODO are the numbers and IDs below good?
