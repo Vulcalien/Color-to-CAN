@@ -127,7 +127,13 @@ static inline int write_sample(struct color2can_sample *data) {
 }
 
 static inline int retrieve_data(struct color2can_sample *data) {
-    return color_read_data(&data->r, &data->g, &data->b, &data->clear);
+    uint16_t r, g, b, clear;
+    int err = color_read_data(&r, &g, &b, &clear);
+
+    *data = (struct color2can_sample) {
+        .r = r, .g = g, .b = b, .clear = clear
+    };
+    return err;
 }
 
 static void *sender_run(void *arg) {
