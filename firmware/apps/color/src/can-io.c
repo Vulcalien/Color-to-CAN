@@ -25,6 +25,7 @@
 #include <nuttx/can/can.h>
 
 #include "color2can.h"
+#include "color.h"
 
 static int can_fd;
 static int sensor_id;
@@ -98,11 +99,49 @@ static void *receiver_run(void *arg) {
 /*                               Sender                               */
 /* ================================================================== */
 
+static inline int write_sample(struct color2can_sample *data) {
+    struct can_msg_s msg;
+
+    const int datalen = sizeof(struct color2can_sample);
+    const int id = COLOR2CAN_SAMPLE_MASK_ID | sensor_id;
+
+    // set CAN header
+    msg.cm_hdr = (struct can_hdr_s) {
+        .ch_id  = id,
+        .ch_dlc = datalen,
+        .ch_rtr = false,
+        .ch_tcf = false
+    };
+
+    // set CAN data
+    memcpy(msg.cm_data, data, datalen);
+
+    // write CAN message
+    const int msglen = CAN_MSGLEN(datalen);
+    const int nbytes = write(can_fd, &msg, msglen);
+    if(nbytes != msglen) {
+        printf("[CAN-IO] error writing to CAN device\n");
+        return 1;
+    }
+    return 0;
+}
+
+static inline int retrieve_data(struct color2can_sample *data) {
+    return color_read_data(&data->r, &data->g, &data->b, &data->clear);
+}
+
 static void *sender_run(void *arg) {
     printf("[CAN-IO] sender thread started\n");
 
     while(true) {
-        // TODO
+        sem_wait(&request_data_message);
+
+        struct color2can_sample data;
+        while(retrieve_data(&data)) {
+            usleep(500); // wait 0.5ms
+            continue;
+        }
+        write_sample(&data);
     }
     return NULL;
 }
