@@ -80,25 +80,20 @@ int color_init(void) {
     return 0;
 }
 
-int color_read_data(uint8_t *r, uint8_t *g, uint8_t *b,
-                    uint8_t *clear) {
+int color_read_data(uint16_t *r, uint16_t *g, uint16_t *b,
+                    uint16_t *clear) {
     // read STATUS register, then read the (clear, r, g, b) values
     uint8_t cmd = 0xb3; // addr = 0x13 (STATUS register), auto-increment
     uint8_t data[9];
     i2c_writeread(i2cmain, &i2c_config, &cmd, 1, data, sizeof(data));
 
-    // TODO data should only be returned once. If the STATUS register is
-    // not automatically updated by hardware, software checks should be
-    // added to prevent data being returned multiple times.
-
     // if data is not valid, return
     if(!(data[0] & 1))
         return 1;
 
-    const int max_count = 1024;
-    *clear = (data[1] | data[2] << 8) * 255 / max_count;
-    *r     = (data[3] | data[4] << 8) * 255 / max_count;
-    *g     = (data[5] | data[6] << 8) * 255 / max_count;
-    *b     = (data[7] | data[8] << 8) * 255 / max_count;
+    *clear = data[1] | data[2] << 8;
+    *r     = data[3] | data[4] << 8;
+    *g     = data[5] | data[6] << 8;
+    *b     = data[7] | data[8] << 8;
     return 0;
 }

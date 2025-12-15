@@ -19,5 +19,5 @@
 
 extern int color_init(void);
 
-extern int color_read_data(uint8_t *r, uint8_t *g, uint8_t *b,
-                           uint8_t *clear);
+extern int color_read_data(uint16_t *r, uint16_t *g, uint16_t *b,
+                           uint16_t *clear);
