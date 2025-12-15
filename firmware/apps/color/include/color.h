@@ -21,3 +21,5 @@ extern int color_init(void);
 
 extern int color_read_data(uint16_t *r, uint16_t *g, uint16_t *b,
                            uint16_t *clear);
+
+extern int color_set_led_usage(int val);
