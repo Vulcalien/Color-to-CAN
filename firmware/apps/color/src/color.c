@@ -44,7 +44,7 @@ static inline int detect_sensor(void) {
 static inline int initialize_sensor(void) {
     uint8_t buf[] = {
         0xa0, // addr = 0x00 (ENABLE register), auto-increment
-        0x03, // ENABLE: Power on, RGBC enable
+        0x13, // ENABLE: Power on, RGBC enable, LED off
         0xff, // ATIME:  2.4 ms
     };
     i2c_write(i2cmain, &i2c_config, buf, sizeof(buf));
@@ -80,14 +80,28 @@ int color_init(void) {
     return 0;
 }
 
+static inline void toggle_led(bool enable) {
+    const int led_bit = (!enable) << 4;
+    uint8_t buf[] = {
+        0x80,           // addr = 0x00 (ENABLE register)
+        0x03 | led_bit, // ENABLE: Power on, RGBC enable, LED on/off
+    };
+    i2c_write(i2cmain, &i2c_config, buf, sizeof(buf));
+}
+
 int color_read_data(uint16_t *r, uint16_t *g, uint16_t *b,
                     uint16_t *clear) {
+    toggle_led(true);
+    usleep(2400);
+
     // read STATUS register, then read the (clear, r, g, b) values
     uint8_t cmd = 0xb3; // addr = 0x13 (STATUS register), auto-increment
     uint8_t data[9];
     i2c_writeread(i2cmain, &i2c_config, &cmd, 1, data, sizeof(data));
 
-    // if data is not valid, return
+    toggle_led(false);
+
+    // if data is not valid, return an error
     if(!(data[0] & 1))
         return 1;
 
