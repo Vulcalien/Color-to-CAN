@@ -24,9 +24,8 @@ extern "C" {
 
 #define COLOR2CAN_CONFIG_SIZE 2
 struct color2can_config {
-    uint8_t frequency;           // 0=only on-demand, 1...60 Hz
-    uint8_t use_led         : 2; // 0=never, 1=when sampling, 2=always on
-    uint8_t transmit_timing : 1; // 0=on-demand, 1=continuous
+    uint16_t transmit_frequency : 9; // 0=on-demand, 1...400Hz
+    uint16_t use_led : 2; // 0=never, 1=when sampling, 2=always
 };
 
 #define COLOR2CAN_SAMPLE_SIZE 8
