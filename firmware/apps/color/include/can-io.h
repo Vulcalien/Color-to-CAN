@@ -20,3 +20,4 @@
 extern int can_io_start(void);
 
 extern int can_io_set_sensor_id(int id);
+extern int can_io_set_transmit_frequency(int val);

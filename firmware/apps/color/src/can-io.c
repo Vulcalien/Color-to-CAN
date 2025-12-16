@@ -30,6 +30,7 @@ static int can_fd;
 static int sensor_id;
 
 static int requests;
+static int transmit_frequency;
 
 /* ================================================================== */
 /*                              Receiver                              */
@@ -56,7 +57,16 @@ static inline void handle_message(const struct can_msg_s *msg) {
                 break;
             }
 
-            // TODO ...
+            struct color2can_config config;
+            memcpy(&config, msg->cm_data, COLOR2CAN_CONFIG_SIZE);
+
+            // invalidate pending requests
+            requests = 0;
+
+            puts("=== Configuring ===");
+            can_io_set_transmit_frequency(config.transmit_frequency);
+            color_set_led_usage(config.use_led);
+            puts("");
         } break;
 
         case COLOR2CAN_SAMPLE_MASK_ID: {
@@ -137,15 +147,36 @@ static inline int retrieve_data(struct color2can_sample *data) {
     return err;
 }
 
+static uint64_t get_time_us(void) {
+    struct timespec t;
+    clock_gettime(CLOCK_MONOTONIC, &t);
+    return (uint64_t) t.tv_sec * 1000000 + (uint64_t) t.tv_nsec / 1000;
+}
+
 static void sender(void) {
-    // try to satisfy all pending requests
-    while(requests > 0) {
+    static uint64_t latest_write_time;
+
+    // check if an automatic request should be made
+    if(requests == 0 && transmit_frequency > 0) {
+        int period = 1000000 / transmit_frequency;
+        if(get_time_us() - latest_write_time >= period)
+            requests++;
+    }
+
+    // Try to satisfy one pending request: it's best to only satisfy one
+    // to prevent the thread from being stuck here.
+    //
+    // For example: 1000 requests are sent, then shortly after a config
+    // message is sent; that config message should invalidate all
+    // unhandled requests.
+    if(requests > 0) {
         struct color2can_sample data;
         if(retrieve_data(&data))
-            break;
+            return;
 
         write_sample(&data);
         requests--;
+        latest_write_time = get_time_us();
     }
 }
 
@@ -186,7 +217,10 @@ static void *can_io_run(void *arg) {
     while(true) {
         receiver();
         sender();
-        usleep(500); // wait 0.5ms
+
+        // if there are no pending requests, sleep
+        if(requests == 0)
+            usleep(500); // wait 0.5ms
     }
     return NULL;
 }
@@ -213,5 +247,16 @@ int can_io_set_sensor_id(int id) {
         err = 1;
 
     printf("[CAN-IO] setting sensor ID to %d (err=%d)\n", id, err);
+    return err;
+}
+
+int can_io_set_transmit_frequency(int val) {
+    int err = 0;
+    if(val <= 400)
+        transmit_frequency = val;
+    else
+        err = 1;
+
+    printf("[CAN-IO] setting transmit frequency to %d (err=%d)\n", val, err);
     return err;
 }
