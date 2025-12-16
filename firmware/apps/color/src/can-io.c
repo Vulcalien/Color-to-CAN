@@ -17,10 +17,9 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
+#include <errno.h>
 #include <fcntl.h>
-#include <pthread.h>
-#include <semaphore.h>
+#include <unistd.h>
 #include <sys/ioctl.h>
 #include <nuttx/can/can.h>
 
@@ -30,7 +29,7 @@
 static int can_fd;
 static int sensor_id;
 
-static sem_t request_data_message;
+static int requests;
 
 /* ================================================================== */
 /*                              Receiver                              */
@@ -63,23 +62,26 @@ static inline void handle_message(const struct can_msg_s *msg) {
         case COLOR2CAN_SAMPLE_MASK_ID: {
             // if RTR bit is set, request a data message
             if(msg->cm_hdr.ch_rtr)
-                sem_post(&request_data_message);
+                requests++;
         } break;
     }
 }
 
-static void *receiver_run(void *arg) {
-    printf("[CAN-IO] receiver thread started\n");
-
+static void receiver(void) {
     static char buffer[RECEIVER_BUFFER_SIZE];
+
+    // keep reading messages until the file descriptor is empty
     while(true) {
         int offset = 0;
 
         // read CAN message(s)
         int nbytes = read(can_fd, buffer, RECEIVER_BUFFER_SIZE);
         if(nbytes < 0) {
-            printf("[CAN-IO] error reading from CAN device\n");
-            continue;
+            if(errno != EAGAIN)
+                puts("[CAN-IO] error reading from CAN device");
+
+            // there are no new messages: break the loop
+            break;
         }
 
         // handle CAN message(s)
@@ -92,7 +94,6 @@ static void *receiver_run(void *arg) {
             offset += msglen;
         }
     }
-    return NULL;
 }
 
 /* ================================================================== */
@@ -136,23 +137,31 @@ static inline int retrieve_data(struct color2can_sample *data) {
     return err;
 }
 
-static void *sender_run(void *arg) {
-    printf("[CAN-IO] sender thread started\n");
-
-    while(true) {
-        sem_wait(&request_data_message);
-
+static void sender(void) {
+    // try to satisfy all pending requests
+    while(requests > 0) {
         struct color2can_sample data;
-        while(retrieve_data(&data)) {
-            usleep(500); // wait 0.5ms
-            continue;
-        }
+        if(retrieve_data(&data))
+            break;
+
         write_sample(&data);
+        requests--;
     }
-    return NULL;
 }
 
 /* ================================================================== */
+
+static inline int open_can_fd(void) {
+    can_fd = open("/dev/can0", O_RDWR | O_NOCTTY);
+    if(can_fd < 0)
+        return 1;
+
+    // enable non-blocking reads
+    int flags = fcntl(can_fd, F_GETFL);
+    fcntl(can_fd, F_SETFL, flags | O_NONBLOCK);
+
+    return 0;
+}
 
 static inline void print_bit_timing(int fd) {
     struct canioc_bittiming_s bt;
@@ -172,33 +181,25 @@ static inline void print_bit_timing(int fd) {
     }
 }
 
-int can_io_start(void) {
-    // open CAN device in read-write mode
-    can_fd = open("/dev/can0", O_RDWR | O_NOCTTY);
-    if(can_fd < 0) {
-        perror("[CAN-IO] error opening /dev/can0");
-        return 1;
+static void *can_io_run(void *arg) {
+    puts("[CAN-IO] thread started");
+    while(true) {
+        receiver();
+        sender();
+        usleep(500); // wait 0.5ms
     }
-    printf("[CAN-IO] /dev/can0 opened\n");
+    return NULL;
+}
+
+int can_io_start(void) {
+    while(open_can_fd())
+        perror("[CAN-IO] error opening /dev/can0");
+    puts("[CAN-IO] /dev/can0 opened");
     print_bit_timing(can_fd);
 
-    // initialize request data message semaphore
-    if(sem_init(&request_data_message, 0, 0)) {
-        printf("[CAN-IO] error initializing request data message semaphore\n");
-        return 1;
-    }
-
-    // create receiver thread
-    pthread_t receiver_thread;
-    if(pthread_create(&receiver_thread, NULL, receiver_run, NULL)) {
-        printf("[CAN-IO] error creating receiver thread\n");
-        return 1;
-    }
-
-    // create sender thread
-    pthread_t sender_thread;
-    if(pthread_create(&sender_thread, NULL, sender_run, NULL)) {
-        printf("[CAN-IO] error creating sender thread\n");
+    pthread_t thread;
+    if(pthread_create(&thread, NULL, can_io_run, NULL)) {
+        puts("[CAN-IO] error creating thread");
         return 1;
     }
     return 0;
