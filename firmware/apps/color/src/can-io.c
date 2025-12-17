@@ -71,6 +71,24 @@ static inline void handle_message(const struct can_msg_s *msg) {
             puts("");
         } break;
 
+        case COLOR2CAN_RANGE_MASK_ID: {
+            if(msg->cm_hdr.ch_dlc != COLOR2CAN_RANGE_SIZE) {
+                printf(
+                    "[CAN-IO] malformed range message "
+                    "(size=%d, expected=%d)\n",
+                    msg->cm_hdr.ch_dlc, COLOR2CAN_RANGE_SIZE
+                );
+                break;
+
+                struct color2can_range range;
+                memcpy(&range, msg->cm_data, COLOR2CAN_RANGE_SIZE);
+
+                processing_set_range(
+                    range.range_id, range.low_high_flag, range.color
+                );
+            }
+        } break;
+
         case COLOR2CAN_SAMPLE_MASK_ID: {
             // if RTR bit is set, request a data message
             if(msg->cm_hdr.ch_rtr)
