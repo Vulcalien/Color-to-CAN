@@ -115,6 +115,13 @@ int color_read_data(uint16_t *r, uint16_t *g, uint16_t *b,
     *r     = data[3] | data[4] << 8;
     *g     = data[5] | data[6] << 8;
     *b     = data[7] | data[8] << 8;
+
+    if(debug_flag) {
+        printf(
+            "[Color] read R:%d, G:%d, B:%d - C:%d\n",
+            *r, *g, *b, *clear
+        );
+    }
     return 0;
 }
 
