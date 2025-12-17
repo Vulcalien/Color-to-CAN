@@ -22,10 +22,14 @@ extern "C" {
 #include <stdint.h>
 #include <stdbool.h>
 
+#define COLOR2CAN_SPACE_RGB 0
+#define COLOR2CAN_SPACE_HSV 1
+
 #define COLOR2CAN_CONFIG_SIZE 2
 struct color2can_config {
     uint16_t transmit_frequency : 9; // 0=on-demand, 1...400Hz
-    uint16_t use_led : 2; // 0=never, 1=when sampling, 2=always
+    uint16_t color_space        : 1; // 0=RGB, 1=HSV
+    uint16_t use_led            : 2; // 0=never, 1=when sampling, 2=always
 };
 
 #define COLOR2CAN_RANGE_SIZE 8
