@@ -24,6 +24,7 @@
 #include <nuttx/can/can.h>
 
 #include "color2can.h"
+#include "processing.h"
 #include "color.h"
 
 static int can_fd;
@@ -65,6 +66,7 @@ static inline void handle_message(const struct can_msg_s *msg) {
 
             puts("=== Configuring ===");
             can_io_set_transmit_frequency(config.transmit_frequency);
+            processing_set_color_space(config.color_space);
             color_set_led_usage(config.use_led);
             puts("");
         } break;
@@ -138,13 +140,17 @@ static inline int write_sample(struct color2can_sample *data) {
 }
 
 static inline int retrieve_data(struct color2can_sample *data) {
-    uint16_t r, g, b, clear;
-    int err = color_read_data(&r, &g, &b, &clear);
+    uint16_t color[3], clear;
+    bool within_range;
+    int range_id;
+    if(processing_get_data(color, &clear, &within_range, &range_id))
+        return 1;
 
-    *data = (struct color2can_sample) {
-        .color = { r, g, b }, .clear = clear
-    };
-    return err;
+    memcpy(data->color, color, sizeof(color));
+    data->clear        = clear;
+    data->within_range = within_range;
+    data->range_id     = range_id;
+    return 0;
 }
 
 static uint64_t get_time_us(void) {
