@@ -10,6 +10,11 @@ _Static_assert(
 );
 
 _Static_assert(
+    sizeof(struct color2can_range) == COLOR2CAN_RANGE_SIZE,
+    "size of struct color2can_range is incorrect"
+);
+
+_Static_assert(
     sizeof(struct color2can_sample) == COLOR2CAN_SAMPLE_SIZE,
     "size of struct color2can_sample is incorrect"
 );

@@ -28,10 +28,21 @@ struct color2can_config {
     uint16_t use_led : 2; // 0=never, 1=when sampling, 2=always
 };
 
+#define COLOR2CAN_RANGE_SIZE 8
+struct color2can_range {
+    uint16_t color[3];
+
+    uint8_t range_id : 4; // 0...15
+    uint8_t low_high_flag : 1; // 0=low, 1=high
+};
+
 #define COLOR2CAN_SAMPLE_SIZE 8
 struct color2can_sample {
     uint16_t color[3];
     uint16_t clear : 11;
+
+    uint16_t within_range : 1;
+    uint16_t range_id : 4; // 0...15
 };
 
 // TODO are the numbers and IDs below good?
@@ -40,7 +51,8 @@ struct color2can_sample {
 #define COLOR2CAN_MAX_SENSOR_COUNT 32
 
 #define COLOR2CAN_CONFIG_MASK_ID 0x720 // 0x720...0x73f
-#define COLOR2CAN_SAMPLE_MASK_ID 0x740 // 0x740...0x75f
+#define COLOR2CAN_RANGE_MASK_ID  0x740 // 0x740...0x75f
+#define COLOR2CAN_SAMPLE_MASK_ID 0x760 // 0x760...0x77f
 
 #ifdef __cplusplus
 }
