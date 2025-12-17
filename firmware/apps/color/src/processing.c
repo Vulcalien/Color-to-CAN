@@ -20,7 +20,27 @@
 #include "color2can.h"
 #include "color.h"
 
+#define RANGES_COUNT 16
+static struct {
+    bool low_set;
+    uint16_t low[3];
+
+    bool high_set;
+    uint16_t high[3];
+} ranges[RANGES_COUNT];
+
 static void (*convert_to_space)(uint16_t color[3], int r, int g, int b);
+
+static bool is_color_in_range(uint16_t color[3], int range) {
+    uint16_t *low  = ranges[range].low;
+    uint16_t *high = ranges[range].high;
+
+    return (
+        low[0] <= color[0] && color[0] <= high[0] &&
+        low[1] <= color[1] && color[1] <= high[1] &&
+        low[2] <= color[2] && color[2] <= high[2]
+    );
+}
 
 int processing_get_data(uint16_t color[3], uint16_t *clear,
                         bool *within_range, int *range_id) {
@@ -36,9 +56,17 @@ int processing_get_data(uint16_t color[3], uint16_t *clear,
     *clear = c;
 
     // check if color is within a range
-    // TODO...
     *within_range = false;
-    *range_id = 0;
+    for(int i = 0; i < RANGES_COUNT; i++) {
+        if(!ranges[i].low_set || !ranges[i].high_set)
+            continue;
+
+        if(is_color_in_range(color, i)) {
+            *within_range = true;
+            *range_id = i;
+            break;
+        }
+    }
 
     return 0;
 }
@@ -93,6 +121,33 @@ int processing_set_color_space(int color_space) {
     else
         err = 1;
 
+    // invalidate all ranges
+    for(int i = 0; i < RANGES_COUNT; i++) {
+        ranges[i].low_set  = false;
+        ranges[i].high_set = false;
+    }
+
     printf("[Processing] set color space to %d (err=%d)\n", color_space, err);
     return err;
+}
+
+int processing_set_range(int id, bool high, uint16_t color[3]) {
+    uint16_t *dest;
+    if(high) {
+        dest = ranges[id].high;
+        ranges[id].high_set = true;
+    } else {
+        dest = ranges[id].low;
+        ranges[id].low_set = true;
+    }
+
+    printf(
+        "[Processing] setting range %d %s (",
+        id, high ? "high" : "low"
+    );
+    for(int i = 0; i < 3; i++) {
+        dest[i] = color[i];
+        printf("%d%s", dest[i], i == 2 ? ", " : ")\n");
+    }
+    return 0;
 }

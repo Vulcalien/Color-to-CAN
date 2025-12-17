@@ -21,3 +21,4 @@ extern int processing_get_data(uint16_t color[3], uint16_t *clear,
                                bool *within_range, int *range_id);
 
 extern int processing_set_color_space(int color_space);
+extern int processing_set_range(int id, bool high, uint16_t color[3]);
