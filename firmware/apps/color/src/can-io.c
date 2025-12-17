@@ -142,7 +142,7 @@ static inline int retrieve_data(struct color2can_sample *data) {
     int err = color_read_data(&r, &g, &b, &clear);
 
     *data = (struct color2can_sample) {
-        .r = r, .g = g, .b = b, .clear = clear
+        .color = { r, g, b }, .clear = clear
     };
     return err;
 }

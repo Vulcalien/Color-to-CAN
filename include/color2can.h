@@ -30,10 +30,8 @@ struct color2can_config {
 
 #define COLOR2CAN_SAMPLE_SIZE 8
 struct color2can_sample {
-    uint16_t r;
-    uint16_t g;
-    uint16_t b;
-    uint16_t clear;
+    uint16_t color[3];
+    uint16_t clear : 11;
 };
 
 // TODO are the numbers and IDs below good?
