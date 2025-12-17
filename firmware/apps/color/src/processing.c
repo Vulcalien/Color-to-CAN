@@ -50,7 +50,38 @@ static void rgb(uint16_t color[3], int r, int g, int b) {
 }
 
 static void hsv(uint16_t color[3], int r, int g, int b) {
-    // TODO
+    int max = r;
+    if(g > max) max = g;
+    if(b > max) max = b;
+
+    int min = r;
+    if(g < min) min = g;
+    if(b < min) min = b;
+
+    int chroma = max - min;
+
+    // calculate hue
+    int hue = 0;
+    if(chroma != 0) {
+        if(max == r)
+            hue = (60 * (g - b) / chroma + 360) % 360;
+        else if(max == g)
+            hue = 60 * (b - r) / chroma + 120;
+        else
+            hue = 60 * (r - g) / chroma + 240;
+    }
+
+    // calculate saturation
+    int saturation = 0;
+    if(max != 0)
+        saturation = 1023 * chroma / max;
+
+    // calculate value
+    int value = max;
+
+    color[0] = hue;
+    color[1] = saturation;
+    color[2] = value;
 }
 
 int processing_set_color_space(int color_space) {
