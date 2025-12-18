@@ -143,11 +143,12 @@ int processing_set_range(int id, bool high, int color[3]) {
 
     printf(
         "[Processing] setting range %d %s (",
-        id, high ? "high" : "low"
+        id, high ? "high" : "low "
     );
     for(int i = 0; i < 3; i++) {
         dest[i] = color[i];
-        printf("%d%s", dest[i], i == 2 ? ", " : ")\n");
+        printf("%d%s", dest[i], i != 2 ? ", " : ")");
     }
+    puts("");
     return 0;
 }
