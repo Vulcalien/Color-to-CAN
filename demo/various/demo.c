@@ -80,10 +80,39 @@ static void request_sample(void) {
 static void *sender(void *arg) {
     struct color2can_config config = {
         .transmit_frequency = 0,
-        .color_space = COLOR2CAN_SPACE_RGB,
+        .color_space = COLOR2CAN_SPACE_HSV,
         .use_led = 1
     };
     can_write(COLOR2CAN_CONFIG_MASK_ID, &config, COLOR2CAN_CONFIG_SIZE);
+
+    struct color2can_range low_y = {
+        .high = 0,
+        .range_id = 0,
+        .color = { 27, 200, 512 }
+    };
+
+    struct color2can_range high_y = {
+        .high = 1,
+        .range_id = 0,
+        .color = { 87, 1024, 1024 }
+    };
+
+    struct color2can_range low_b = {
+        .high = 0,
+        .range_id = 1,
+        .color = { 170, 200, 150 }
+    };
+
+    struct color2can_range high_b = {
+        .high = 1,
+        .range_id = 1,
+        .color = { 230, 1024, 1024 }
+    };
+
+    can_write(COLOR2CAN_RANGE_MASK_ID, &low_y,  COLOR2CAN_RANGE_SIZE);
+    can_write(COLOR2CAN_RANGE_MASK_ID, &high_y, COLOR2CAN_RANGE_SIZE);
+    can_write(COLOR2CAN_RANGE_MASK_ID, &low_b,  COLOR2CAN_RANGE_SIZE);
+    can_write(COLOR2CAN_RANGE_MASK_ID, &high_b, COLOR2CAN_RANGE_SIZE);
 
     while(1) {
         getchar();
