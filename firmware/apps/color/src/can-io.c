@@ -88,9 +88,7 @@ static inline void handle_message(const struct can_msg_s *msg) {
                     range.color[1],
                     range.color[2]
                 };
-                processing_set_range(
-                    range.range_id, range.low_high_flag, color
-                );
+                processing_set_range(range.range_id, range.high, color);
             }
         } break;
 

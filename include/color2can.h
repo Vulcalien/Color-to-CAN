@@ -37,7 +37,7 @@ struct color2can_range {
     uint16_t color[3];
 
     uint8_t range_id : 4; // 0...15
-    uint8_t low_high_flag : 1; // 0=low, 1=high
+    uint8_t high     : 1; // 0=low, 1=high
 };
 
 #define COLOR2CAN_SAMPLE_SIZE 8
@@ -48,8 +48,6 @@ struct color2can_sample {
     uint16_t within_range : 1;
     uint16_t range_id : 4; // 0...15
 };
-
-// TODO are the numbers and IDs below good?
 
 // number of distinct sensor IDs (ID=0 is broadcast)
 #define COLOR2CAN_MAX_SENSOR_COUNT 32
