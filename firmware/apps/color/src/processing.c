@@ -23,17 +23,17 @@
 #define RANGES_COUNT 16
 static struct {
     bool low_set;
-    uint16_t low[3];
+    int low[3];
 
     bool high_set;
-    uint16_t high[3];
+    int high[3];
 } ranges[RANGES_COUNT];
 
-static void (*convert_to_space)(uint16_t color[3], int r, int g, int b);
+static void (*convert_to_space)(int color[3], int r, int g, int b);
 
-static bool is_color_in_range(uint16_t color[3], int range) {
-    uint16_t *low  = ranges[range].low;
-    uint16_t *high = ranges[range].high;
+static bool is_color_in_range(int color[3], int range) {
+    int *low  = ranges[range].low;
+    int *high = ranges[range].high;
 
     return (
         low[0] <= color[0] && color[0] <= high[0] &&
@@ -42,9 +42,9 @@ static bool is_color_in_range(uint16_t color[3], int range) {
     );
 }
 
-int processing_get_data(uint16_t color[3], uint16_t *clear,
+int processing_get_data(int color[3], int *clear,
                         bool *within_range, int *range_id) {
-    uint16_t r, g, b, c;
+    int r, g, b, c;
     if(color_read_data(&r, &g, &b, &c))
         return 1;
 
@@ -71,13 +71,13 @@ int processing_get_data(uint16_t color[3], uint16_t *clear,
     return 0;
 }
 
-static void rgb(uint16_t color[3], int r, int g, int b) {
+static void rgb(int color[3], int r, int g, int b) {
     color[0] = r;
     color[1] = g;
     color[2] = b;
 }
 
-static void hsv(uint16_t color[3], int r, int g, int b) {
+static void hsv(int color[3], int r, int g, int b) {
     int max = r;
     if(g > max) max = g;
     if(b > max) max = b;
@@ -131,8 +131,8 @@ int processing_set_color_space(int color_space) {
     return err;
 }
 
-int processing_set_range(int id, bool high, uint16_t color[3]) {
-    uint16_t *dest;
+int processing_set_range(int id, bool high, int color[3]) {
+    int *dest;
     if(high) {
         dest = ranges[id].high;
         ranges[id].high_set = true;

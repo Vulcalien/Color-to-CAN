@@ -83,8 +83,13 @@ static inline void handle_message(const struct can_msg_s *msg) {
                 struct color2can_range range;
                 memcpy(&range, msg->cm_data, COLOR2CAN_RANGE_SIZE);
 
+                int color[3] = {
+                    range.color[0],
+                    range.color[1],
+                    range.color[2]
+                };
                 processing_set_range(
-                    range.range_id, range.low_high_flag, range.color
+                    range.range_id, range.low_high_flag, color
                 );
             }
         } break;
@@ -158,13 +163,16 @@ static inline int write_sample(struct color2can_sample *data) {
 }
 
 static inline int retrieve_data(struct color2can_sample *data) {
-    uint16_t color[3], clear;
+    int color[3], clear;
     bool within_range;
     int range_id;
     if(processing_get_data(color, &clear, &within_range, &range_id))
         return 1;
 
-    memcpy(data->color, color, sizeof(color));
+    data->color[0] = color[0];
+    data->color[1] = color[1];
+    data->color[2] = color[2];
+
     data->clear        = clear;
     data->within_range = within_range;
     data->range_id     = range_id;

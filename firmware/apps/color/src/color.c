@@ -95,8 +95,7 @@ static inline void toggle_led(bool enable) {
     i2c_write(i2cmain, &i2c_config, buf, sizeof(buf));
 }
 
-int color_read_data(uint16_t *r, uint16_t *g, uint16_t *b,
-                    uint16_t *clear) {
+int color_read_data(int *r, int *g, int *b, int *clear) {
     toggle_led(led_usage != LED_NEVER);
     usleep(2400);
 
