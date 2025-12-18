@@ -62,6 +62,8 @@ int processing_get_data(int color[3], int *clear,
             continue;
 
         if(is_color_in_range(color, i)) {
+            if(debug_flag)
+                printf("[Processing] color is in range %d\n", i);
             *within_range = true;
             *range_id = i;
             break;
