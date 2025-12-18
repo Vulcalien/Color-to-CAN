@@ -79,17 +79,17 @@ static inline void handle_message(const struct can_msg_s *msg) {
                     msg->cm_hdr.ch_dlc, COLOR2CAN_RANGE_SIZE
                 );
                 break;
-
-                struct color2can_range range;
-                memcpy(&range, msg->cm_data, COLOR2CAN_RANGE_SIZE);
-
-                int color[3] = {
-                    range.color[0],
-                    range.color[1],
-                    range.color[2]
-                };
-                processing_set_range(range.range_id, range.high, color);
             }
+
+            struct color2can_range range;
+            memcpy(&range, msg->cm_data, COLOR2CAN_RANGE_SIZE);
+
+            int color[3] = {
+                range.color[0],
+                range.color[1],
+                range.color[2]
+            };
+            processing_set_range(range.range_id, range.high, color);
         } break;
 
         case COLOR2CAN_SAMPLE_MASK_ID: {
