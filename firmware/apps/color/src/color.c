@@ -17,12 +17,9 @@
 
 #include <stdio.h>
 #include <unistd.h>
-
 #include <nuttx/i2c/i2c_master.h>
 
-#define LED_NEVER         0
-#define LED_WHEN_SAMPLING 1
-#define LED_ALWAYS_ON     2
+#include "color2can.h"
 
 extern struct i2c_master_s *i2cmain;
 static struct i2c_config_s i2c_config;
@@ -96,7 +93,7 @@ static inline void toggle_led(bool enable) {
 }
 
 int color_read_data(int *r, int *g, int *b, int *clear) {
-    toggle_led(led_usage != LED_NEVER);
+    toggle_led(led_usage != COLOR2CAN_LED_NEVER);
     usleep(2400);
 
     // read STATUS register, then read the (clear, r, g, b) values
@@ -104,7 +101,7 @@ int color_read_data(int *r, int *g, int *b, int *clear) {
     uint8_t data[9];
     i2c_writeread(i2cmain, &i2c_config, &cmd, 1, data, sizeof(data));
 
-    toggle_led(led_usage == LED_ALWAYS_ON);
+    toggle_led(led_usage == COLOR2CAN_LED_ALWAYS);
 
     // if data is not valid, return an error
     if(!(data[0] & 1))
@@ -127,9 +124,9 @@ int color_read_data(int *r, int *g, int *b, int *clear) {
 int color_set_led_usage(int val) {
     int err = 0;
     switch(val) {
-        case LED_NEVER:
-        case LED_WHEN_SAMPLING:
-        case LED_ALWAYS_ON:
+        case COLOR2CAN_LED_NEVER:
+        case COLOR2CAN_LED_SAMPLING:
+        case COLOR2CAN_LED_ALWAYS:
             led_usage = val;
             break;
 

@@ -25,6 +25,10 @@ extern "C" {
 #define COLOR2CAN_SPACE_RGB 0
 #define COLOR2CAN_SPACE_HSV 1
 
+#define COLOR2CAN_LED_NEVER    0
+#define COLOR2CAN_LED_SAMPLING 1
+#define COLOR2CAN_LED_ALWAYS   2
+
 #define COLOR2CAN_CONFIG_SIZE 2
 struct color2can_config {
     uint16_t transmit_frequency : 9; // 0=on-demand, 1...400Hz
