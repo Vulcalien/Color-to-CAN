@@ -56,9 +56,9 @@ struct color2can_sample {
 // number of distinct sensor IDs (ID=0 is broadcast)
 #define COLOR2CAN_MAX_SENSOR_COUNT 32
 
-#define COLOR2CAN_CONFIG_MASK_ID 0x720 // 0x720...0x73f
-#define COLOR2CAN_RANGE_MASK_ID  0x740 // 0x740...0x75f
-#define COLOR2CAN_SAMPLE_MASK_ID 0x760 // 0x760...0x77f
+#define COLOR2CAN_CONFIG_MASK_ID 0x660 // 0x660...0x67f
+#define COLOR2CAN_RANGE_MASK_ID  0x680 // 0x680...0x69f
+#define COLOR2CAN_SAMPLE_MASK_ID 0x6a0 // 0x6a0...0x6bf
 
 #ifdef __cplusplus
 }
