@@ -93,8 +93,8 @@ static inline void handle_message(const struct can_msg_s *msg) {
         } break;
 
         case COLOR2CAN_SAMPLE_MASK_ID: {
-            // if RTR bit is set, request a data message
-            if(msg->cm_hdr.ch_rtr)
+            // if RTR=1 or len=0, request a data message
+            if(msg->cm_hdr.ch_rtr || msg->cm_hdr.ch_dlc == 0)
                 requests++;
         } break;
     }
